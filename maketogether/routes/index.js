@@ -5,7 +5,9 @@ const { catchErrors } = require('../handlers/errorHandlers')
 
 
 // Hit this specif route '/' then do something
-router.get('/', storeRouter.homePage)
+router.get('/', storeRouter.getStores)
+// Hit this specif route '/stores' then do something
+router.get('/stores', storeRouter.getStores)
 // Hit /add then do something
 router.get('/add', storeRouter.addStore)
 // Hit /add then do something
