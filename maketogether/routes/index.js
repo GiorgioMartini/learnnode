@@ -1,16 +1,18 @@
 const express = require('express')
 const router = express.Router()
-const storeRouter = require('../controllers/storeController')
+const storeController = require('../controllers/storeController')
 const { catchErrors } = require('../handlers/errorHandlers')
 
+router.get('/',                catchErrors(storeController.getStores))
 
-// Hit this specif route '/' then do something
-router.get('/', storeRouter.getStores)
-// Hit this specif route '/stores' then do something
-router.get('/stores', storeRouter.getStores)
-// Hit /add then do something
-router.get('/add', storeRouter.addStore)
-// Hit /add then do something
-router.post('/add', catchErrors(storeRouter.createStore))
+router.get('/stores/:id/edit', catchErrors(storeController.editStore))
 
+router.get('/stores',          catchErrors(storeController.getStores))
+
+router.get('/add',             catchErrors(storeController.addStore))
+
+router.post('/add/:id',       catchErrors(storeController.updateStore))
+
+router.post('/add',            catchErrors(storeController.createStore))
+ 
 module.exports = router
