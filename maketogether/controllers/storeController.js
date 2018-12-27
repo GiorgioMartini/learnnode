@@ -6,19 +6,17 @@ exports.homePage = (req, res) => {
 }
 
 exports.addStore = (req, res) => {
-  res.render('editStore', {title: 'add store'})
+  res.render('editStore', { title: 'add store'})
 }
 
 exports.createStore = async (req, res) => {
   const store = await (new Store(req.body)).save()
-  await store.save()
   req.flash('sucess', `Succesfully created ${store.name}!`)
-  res.redirect(`./store/${store.slug}`)
+  res.redirect(`/store/${store.slug}`)
 }
 
 exports.getStores = async (req, res) => {
   const stores = await Store.find()
-  console.log(stores)
   // render the  stores view and also pass the stores variable
   res.render('stores', { title: 'Stores', stores })
 } 

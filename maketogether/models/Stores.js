@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 mongoose.Promise = global.Promise
 const slug = require('slugs')
 
-
 // Create our model
 const storeSchema = new mongoose.Schema({
   name: {
