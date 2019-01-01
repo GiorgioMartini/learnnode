@@ -46,6 +46,14 @@ exports.createStore = async (req, res) => {
   res.redirect(`/store/${store.slug}`)
 }
 
+exports.getStoreBySlug = async (req, res, next) => {
+  const store = await Store.findOne({ slug: req.params.slug })
+  // 404 if no store
+  if (!store) return next()
+
+  res.render('store', { store, title: store.name })
+}
+
 exports.getStores = async (req, res) => {
   const stores = await Store.find()
   // render the  stores view and also pass the stores variable

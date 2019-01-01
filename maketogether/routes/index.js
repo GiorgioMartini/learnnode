@@ -23,4 +23,6 @@ router.post('/add',
     catchErrors(storeController.createStore)
 )
 
+router.get('/store/:slug', catchErrors(storeController.getStoreBySlug))
+
 module.exports = router
