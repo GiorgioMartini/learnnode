@@ -41,13 +41,17 @@ exports.addStore = (req, res) => {
 }
 
 exports.createStore = async (req, res) => {
+  
+  req.body.author = req.user._id
+  
   const store = await (new Store(req.body)).save()
+  
   req.flash('sucess', `Succesfully created ${store.name}!`)
   res.redirect(`/store/${store.slug}`)
 }
 
 exports.getStoreBySlug = async (req, res, next) => {
-  const store = await Store.findOne({ slug: req.params.slug })
+  const store = await Store.findOne({ slug: req.params.slug }).populate('author')
   // 404 if no store
   if (!store) return next()
 
@@ -74,8 +78,16 @@ exports.getStoresByTag = async (req, res) => {
   res.render('tags', { tags, title: 'Tags', tag, stores })
 }
 
-  exports.editStore = async (req, res) => {
+const confirmOwner = (store, user) => {
+  if(!store.author.equals(user._id)) {
+    throw Error('You must own this store in order to edit it')
+  }
+}
+
+exports.editStore = async (req, res) => {
   const store = await Store.findOne({ _id: req.params.id })
+
+  confirmOwner(store, req.user)
   
   res.render('editStore', { 
     title: `edit ${store.name}`,
