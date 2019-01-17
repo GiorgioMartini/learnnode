@@ -106,4 +106,47 @@ exports.updateStore = async (req, res) => {
   req.flash('success', `successfully updated ${store.name} <a href="/stores/${store.slug}">View store</a>`)
   res.redirect(`/stores/${store._id}/edit`)
 }
- 
+
+exports.searchStores = async (req, res) => {
+  // find the stores
+  const stores = await Store.find({
+    $text: {
+      $search: req.query.q
+    }
+  },{
+    score: { $meta: 'textScore' }
+    // sort by textscore
+  }).sort({
+    score: { $meta: 'textScore' }
+    // limit to 'x'
+  }).limit(5)
+  
+  res.json(stores)
+}
+
+exports.mapStores = async (req, res) => {
+  const coordinates = [req.query.lng, req.query.lat].map(parseFloat)
+  console.log(coordinates) 
+  const q = {
+    location: {
+      $near: {
+        $geometry: {
+          type: 'Point',
+          coordinates
+        },
+        $maxDistance: 10000
+      }
+    }
+  }
+
+  const stores = await Store
+    .find(q)
+    .select('slug name description location photo')
+    .limit(10)
+
+  res.json(stores)
+}
+
+exports.mapPage = (req, res) => {
+  res.render('map', {title: 'Map'})
+}
