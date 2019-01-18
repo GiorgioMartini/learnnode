@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Store = mongoose.model('Store')
+const User = mongoose.model('User')
 const multer = require('multer')
 const jimp = require('jimp')
 const uuid = require('uuid')
@@ -22,7 +23,7 @@ exports.resize = async (req, res, next) => {
   if (!req.file) {
     next()
     return
-  }  
+  }
   const extension = req.file.mimetype.split('/')[1]
   req.body.photo = `${uuid.v4()}.${extension}`
 
@@ -41,11 +42,11 @@ exports.addStore = (req, res) => {
 }
 
 exports.createStore = async (req, res) => {
-  
+
   req.body.author = req.user._id
-  
+
   const store = await (new Store(req.body)).save()
-  
+
   req.flash('sucess', `Succesfully created ${store.name}!`)
   res.redirect(`/store/${store.slug}`)
 }
@@ -62,15 +63,15 @@ exports.getStores = async (req, res) => {
   const stores = await Store.find()
   // render the  stores view and also pass the stores variable
   res.render('stores', { title: 'Stores', stores })
-} 
+}
 
 exports.getStoresByTag = async (req, res) => {
-  
-  const tag = req.params.tag 
+
+  const tag = req.params.tag
   const tagQuery = tag || { $exists: true }
   const tagsPromise = Store.getTagList()
   const storesPromise = Store.find({ tags: tagQuery })
-  
+
   const [tags, stores ] = await Promise.all([
     tagsPromise,
     storesPromise
@@ -88,8 +89,8 @@ exports.editStore = async (req, res) => {
   const store = await Store.findOne({ _id: req.params.id })
 
   confirmOwner(store, req.user)
-  
-  res.render('editStore', { 
+
+  res.render('editStore', {
     title: `edit ${store.name}`,
     store })
 }
@@ -120,13 +121,13 @@ exports.searchStores = async (req, res) => {
     score: { $meta: 'textScore' }
     // limit to 'x'
   }).limit(5)
-  
+
   res.json(stores)
 }
 
 exports.mapStores = async (req, res) => {
   const coordinates = [req.query.lng, req.query.lat].map(parseFloat)
-  console.log(coordinates) 
+  console.log(coordinates)
   const q = {
     location: {
       $near: {
@@ -149,4 +150,15 @@ exports.mapStores = async (req, res) => {
 
 exports.mapPage = (req, res) => {
   res.render('map', {title: 'Map'})
+}
+
+exports.heartStore = async (req, res) => {
+  const hearts = req.user.hearts.map( obj => obj.toString())
+  const operator = hearts.includes(req.params.id) ? '$pull' : '$addToSet'
+  const user = await User.findOneAndUpdate(
+    req.user.id,
+    { [operator]: { hearts: req.params.id }},
+    { new:  true }
+  )
+  res.json(user)
 }
