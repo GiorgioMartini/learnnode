@@ -75,9 +75,13 @@ router.post('/api/stores/:id/heart', catchErrors(storeController.heartStore))
 
 router.get('/hearts', authController.isLoggedIn, catchErrors(storeController.getHearts))
 
+router.get('/top', catchErrors(storeController.getTopStores))
+
 router.post('/reviews/:id',
     authController.isLoggedIn,
     catchErrors(reviewController.addReview)
 )
+
+
 
 module.exports = router

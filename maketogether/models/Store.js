@@ -39,7 +39,11 @@ const storeSchema = new mongoose.Schema({
     ref: 'User',
     required: 'You must supply an author'
   }
+},{
+  toJSON: {virtual: true},
+  toObject: {virtual: true},
 })
+
 
 // define our index
 storeSchema.index({
@@ -78,6 +82,42 @@ storeSchema.statics.getTagList = function() {
   ])
 }
 
+storeSchema.statics.getTopStores = function() {
+  return this.aggregate([
+    // lookup stores and populate their reviews
+    { $lookup:{
+        from: 'reviews',
+        localField: '_id',
+        foreignField: 'store',
+        as: 'reviews'
+      }},
+    // filter for only elemetns with more than two reviews
+    { $match: {
+        'reviews.1': { $exists: true } 
+      }},
+    // add average fields review
+    { $addFields: {
+        averageRating: { $avg: '$reviews.rating' }
+      }},
+    // sort by our new field
+    { $sort: { averageRating: -1 }},
+    // limit
+    { $limit: 10 }
+  ])
+}
 
+function autopopulate(next) {
+  this.populate('reviews')
+  next()
+}
+
+storeSchema.pre('find', autopopulate)
+storeSchema.pre('findOne', autopopulate)
+
+storeSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'store'
+})
 
 module.exports = mongoose.model('Store', storeSchema)
